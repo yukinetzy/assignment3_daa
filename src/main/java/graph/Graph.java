@@ -1,29 +1,52 @@
 package graph;
-import java.util.*;
+
+import edu.princeton.cs.algs4.Edge;
+import edu.princeton.cs.algs4.EdgeWeightedGraph;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Graph {
-    private final int V;
-    private int E;
-    private final List<List<Edge>> adj;
-    private final List<Edge> edges;
+    private int vertices;
+    private List<EdgeData> edges;
 
-    public Graph(int V) {
-        this.V = V;
-        this.adj = new ArrayList<>();
-        for(int i=0;i<V;i++) adj.add(new ArrayList<>());
+    public Graph(int vertices) {
+        this.vertices = vertices;
         this.edges = new ArrayList<>();
-        this.E = 0;
-    }
-    public void addEdge(int u, int v, double w) {
-        Edge e = new Edge(u, v, w);
-        adj.get(u).add(e);
-        adj.get(v).add(e);
-        edges.add(e);
-        E++;
     }
 
-    public Iterable<Edge> adj(int v) { return adj.get(v); }
-    public Iterable<Edge> edges() { return edges; }
-    public int V() { return V; }
-    public int E() { return E; }
+    public void addEdge(int src, int dest, double weight) {
+        edges.add(new EdgeData(src, dest, weight));
+    }
+
+    public int V() {
+        return vertices;
+    }
+
+    public int E() {
+        return edges.size();
+    }
+
+    public List<EdgeData> getEdges() {
+        return edges;
+    }
+
+    public EdgeWeightedGraph toEdgeWeightedGraph() {
+        EdgeWeightedGraph G = new EdgeWeightedGraph(vertices);
+        for (EdgeData e : edges) {
+            G.addEdge(new Edge(e.src, e.dest, e.weight));
+        }
+        return G;
+    }
+
+    public static class EdgeData {
+        int src;
+        int dest;
+        double weight;
+
+        public EdgeData(int src, int dest, double weight) {
+            this.src = src;
+            this.dest = dest;
+            this.weight = weight;
+        }
+    }
 }

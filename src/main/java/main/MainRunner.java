@@ -11,31 +11,42 @@ import java.util.*;
 public class MainRunner {
 
     public static void main(String[] args) {
-        String inputPath = "src/main/resources/graphs/generated_graphs.json";
-        String csvPath = "src/main/resources/output/results.csv";
+        String baseInput = "src/main/resources/graphs/";
+        String baseOutput = "src/main/resources/output/";
 
-        List<Graph> graphs = JSONReader.readGraphs(inputPath);
-        List<MSTResult> results = new ArrayList<>();
+        Map<String, String> categories = Map.of(
+                "small", "small_graphs.json",
+                "medium", "medium_graphs.json",
+                "large", "large_graphs.json",
+                "extralarge", "extralarge_graphs.json"
+        );
 
-        for (Graph g : graphs) {
-            System.out.println("Running on graph with " + g.V() + " vertices and " + g.E() + " edges...");
+        for (String type : categories.keySet()) {
+            String inputPath = baseInput + categories.get(type);
+            String csvPath = baseOutput + "results_" + type + ".csv";
 
-            Timer timer = new Timer();
+            System.out.println("🚀 Processing " + type + " graphs...");
+            List<Graph> graphs = JSONReader.readGraphs(inputPath);
+            List<MSTResult> results = new ArrayList<>();
 
-            // Run Prim
-            timer.start();
-            PrimMST prim = new PrimMST(g.toEdgeWeightedGraph());
-            long primTime = timer.stop();
+            for (Graph g : graphs) {
+                Timer timer = new Timer();
 
-            // Run Kruskal
-            timer.start();
-            KruskalMST kruskal = new KruskalMST(g.toEdgeWeightedGraph());
-            long kruskalTime = timer.stop();
+                timer.start();
+                PrimMST prim = new PrimMST(g.toEdgeWeightedGraph());
+                long primTime = timer.stop();
 
-            results.add(new MSTResult(g.V(), g.E(), prim.weight(), kruskal.weight(), primTime, kruskalTime));
+                timer.start();
+                KruskalMST kruskal = new KruskalMST(g.toEdgeWeightedGraph());
+                long kruskalTime = timer.stop();
+
+                results.add(new MSTResult(g.V(), g.E(), prim.weight(), kruskal.weight(), primTime, kruskalTime));
+            }
+
+            CSVExporter.exportResults(csvPath, results);
+            System.out.println("! Results saved to " + csvPath);
         }
 
-        CSVExporter.exportResults(csvPath, results);
-        System.out.println("✅ Results written to " + csvPath);
+        System.out.println("* All experiments completed!");
     }
 }

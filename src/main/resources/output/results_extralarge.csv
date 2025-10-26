@@ -1,0 +1,4 @@
+Vertices,Edges,PrimCost,KruskalCost,PrimTime(ms),KruskalTime(ms)
+1459,4372,29902,00,29902,00,2,7
+1318,3951,28219,00,28219,00,5,7
+1566,4695,32149,00,32149,00,3,6
