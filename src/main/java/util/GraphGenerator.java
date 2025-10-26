@@ -2,33 +2,28 @@ package util;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import graph.Graph;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
 
 public class GraphGenerator {
 
-    private static Random rand = new Random();
+    private static final Random rand = new Random();
 
-    public static void generateGraphs(String outputPath) {
+    public static void generateAllGraphs(String basePath) {
+        generateCategory(basePath + "/small_graphs.json", 5, 6, 29);
+        generateCategory(basePath + "/medium_graphs.json", 10, 30, 299);
+        generateCategory(basePath + "/large_graphs.json", 10, 300, 999);
+        generateCategory(basePath + "/extralarge_graphs.json", 3, 1000, 1999);
+    }
+
+    private static void generateCategory(String outputPath, int count, int minV, int maxV) {
         List<Map<String, Object>> allGraphs = new ArrayList<>();
 
-        // Small (4–6)
-        for (int i = 0; i < 5; i++)
-            allGraphs.add(createGraphData("small_" + (i+1), rand.nextInt(3)+4));
-
-        // Medium (10–15)
-        for (int i = 0; i < 10; i++)
-            allGraphs.add(createGraphData("medium_" + (i+1), rand.nextInt(6)+10));
-
-        // Large (20–30)
-        for (int i = 0; i < 10; i++)
-            allGraphs.add(createGraphData("large_" + (i+1), rand.nextInt(11)+20));
-
-        // Extra Large (35–50)
-        for (int i = 0; i < 3; i++)
-            allGraphs.add(createGraphData("extralarge_" + (i+1), rand.nextInt(16)+35));
+        for (int i = 0; i < count; i++) {
+            int vertices = rand.nextInt(maxV - minV + 1) + minV;
+            allGraphs.add(createGraphData(vertices, "graph_" + (i + 1)));
+        }
 
         Map<String, Object> root = new HashMap<>();
         root.put("graphs", allGraphs);
@@ -36,26 +31,31 @@ public class GraphGenerator {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         try (FileWriter writer = new FileWriter(outputPath)) {
             gson.toJson(root, writer);
-            System.out.println("✅ Graphs successfully generated at: " + outputPath);
+            System.out.println("✅ " + outputPath + " created.");
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private static Map<String, Object> createGraphData(String name, int vertices) {
+    private static Map<String, Object> createGraphData(int vertices, String name) {
         Map<String, Object> graphData = new HashMap<>();
         graphData.put("name", name);
         graphData.put("vertices", vertices);
 
         List<Map<String, Object>> edges = new ArrayList<>();
-        int density = vertices + rand.nextInt(vertices * 2); // количество рёбер
+        int edgeCount = Math.min(vertices * 3, vertices * (vertices - 1) / 4);
 
-        for (int i = 0; i < density; i++) {
+        for (int i = 0; i < edgeCount; i++) {
             int src = rand.nextInt(vertices);
             int dest = rand.nextInt(vertices);
             if (src == dest) continue;
-            int weight = rand.nextInt(50) + 1;
-            Map<String, Object> edge = Map.of("src", src, "dest", dest, "weight", weight);
+            int weight = rand.nextInt(100) + 1;
+
+            Map<String, Object> edge = Map.of(
+                    "src", src,
+                    "dest", dest,
+                    "weight", weight
+            );
             edges.add(edge);
         }
 
@@ -64,6 +64,6 @@ public class GraphGenerator {
     }
 
     public static void main(String[] args) {
-        generateGraphs("src/main/resources/graphs/generated_graphs.json");
+        generateAllGraphs("src/main/resources/graphs");
     }
 }
